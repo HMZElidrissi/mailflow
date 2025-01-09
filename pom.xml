@@ -20,7 +20,7 @@
 
     <modules>
         <!--        <module>api-gateway</module>-->
-        <!--        <module>auth-service</module>-->
+        <module>auth-service</module>
         <!--        <module>contact-service</module>-->
         <!--        <module>campaign-service</module>-->
         <!--        <module>segment-service</module>-->
