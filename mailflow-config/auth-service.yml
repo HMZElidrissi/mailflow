@@ -1,0 +1,19 @@
+server:
+  port: 8081
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/mailflow
+          jwk-set-uri: http://localhost:8080/realms/mailflow/protocol/openid-connect/certs
+
+keycloak:
+  realm: mailflow
+  auth-server-url: http://localhost:8080
+  resource: mailflow-client
+  credentials:
+    secret: ${KEYCLOAK_SECRET:client-secret}
+  bearer-only: true
+  use-resource-role-mappings: true

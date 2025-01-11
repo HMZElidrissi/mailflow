@@ -1,37 +1,5 @@
-server:
-  port: 8081
-
 spring:
   application:
     name: auth-service
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:8080/realms/mailflow
-          jwk-set-uri: http://localhost:8080/realms/mailflow/protocol/openid-connect/certs
-
-keycloak:
-  realm: mailflow
-  auth-server-url: http://localhost:8080
-  resource: mailflow-client
-  credentials:
-    secret: your-client-secret-key
-  bearer-only: true
-  use-resource-role-mappings: true
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    prefer-ip-address: true
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-  endpoint:
-    health:
-      show-details: always
+  config:
+    import: optional:configserver:http://localhost:8089
