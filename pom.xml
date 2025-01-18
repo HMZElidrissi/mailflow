@@ -22,7 +22,8 @@
         <!--        <module>api-gateway</module>-->
         <module>auth-service</module>
         <module>config-server</module>
-        <!--        <module>contact-service</module>-->
+        <module>discovery-server</module>
+        <module>contact-service</module>
         <!--        <module>campaign-service</module>-->
         <!--        <module>segment-service</module>-->
         <!--        <module>analytics-service</module>-->
@@ -54,6 +55,10 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
