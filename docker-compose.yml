@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: mailflow_postgres
+    environment:
+      POSTGRES_USER: mailflow
+      POSTGRES_PASSWORD: password
+      PGDATA: /data/postgres
+    volumes:
+      - mailflow_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - mailflow
+    restart: unless-stopped
+
+  keycloak-db:
+    image: postgres:17-alpine
+    container_name: keycloak_postgres
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
+    volumes:
+      - keycloak_data:/var/lib/postgresql/data
+    networks:
+      - mailflow
+
+  keycloak:
+    container_name: keycloak_mailflow
+    image: quay.io/keycloak/keycloak:26.0.7
+    command: start-dev
+    ports:
+      - "8080:8080"
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: password
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HTTP_ENABLED: true
+    depends_on:
+      - keycloak-db
+    networks:
+      - mailflow
+
+networks:
+  mailflow:
+    driver: bridge
+
+volumes:
+  keycloak_data:
+  mailflow_data:
