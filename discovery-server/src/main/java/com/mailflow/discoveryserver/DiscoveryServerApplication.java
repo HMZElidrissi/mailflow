@@ -1,4 +1,4 @@
-package ma.hmzelidrissi.discoveryserver;
+package com.mailflow.discoveryserver;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
