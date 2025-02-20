@@ -1,6 +1,8 @@
 package com.mailflow.contactservice.repository;
 
 import com.mailflow.contactservice.domain.Contact;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,7 +22,7 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
   @Query("SELECT c FROM Contact c WHERE :tag MEMBER OF c.tags")
   List<Contact> findByTag(@Param("tag") String tag);
 
-  @Query("SELECT c FROM Contact c WHERE c.tags IN :tags")
+  @Query("SELECT DISTINCT c FROM Contact c JOIN c.tags t WHERE t IN :tags")
   List<Contact> findByTags(@Param("tags") Set<String> tags);
 
   @Query(
@@ -29,5 +31,5 @@ public interface ContactRepository extends JpaRepository<Contact, Long> {
           + "LOWER(c.lastName) LIKE LOWER(CONCAT('%', :query, '%')) OR "
           + "LOWER(c.email) LIKE LOWER(CONCAT('%', :query, '%')) OR "
           + "LOWER(t) LIKE LOWER(CONCAT('%', :query, '%'))")
-  List<Contact> searchContacts(@Param("query") String query);
+  Page<Contact> searchContacts(@Param("query") String query, Pageable pageable);
 }

@@ -1,7 +1,8 @@
 package com.mailflow.contactservice.mapper;
 
-import com.mailflow.contactservice.dto.ContactDTO;
 import com.mailflow.contactservice.domain.Contact;
+import com.mailflow.contactservice.dto.contact.ContactRequest;
+import com.mailflow.contactservice.dto.contact.ContactResponse;
 import org.springframework.stereotype.Component;
 
 import java.time.format.DateTimeFormatter;
@@ -12,17 +13,17 @@ public class ContactMapper {
     private static final DateTimeFormatter DATE_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public Contact toEntity(ContactDTO.Request dto) {
+    public Contact toEntity(ContactRequest dto) {
         return Contact.builder()
-                .email(dto.getEmail())
-                .firstName(dto.getFirstName())
-                .lastName(dto.getLastName())
-                .tags(dto.getTags())
+                .email(dto.email())
+                .firstName(dto.firstName())
+                .lastName(dto.lastName())
+                .tags(dto.tags())
                 .build();
     }
 
-    public ContactDTO.Response toResponse(Contact entity) {
-        return ContactDTO.Response.builder()
+    public ContactResponse toResponse(Contact entity) {
+        return ContactResponse.builder()
                 .id(entity.getId())
                 .email(entity.getEmail())
                 .firstName(entity.getFirstName())
@@ -33,12 +34,12 @@ public class ContactMapper {
                 .build();
     }
 
-    public void updateContactFromDto(ContactDTO.Request dto, Contact contact) {
-        contact.setEmail(dto.getEmail());
-        contact.setFirstName(dto.getFirstName());
-        contact.setLastName(dto.getLastName());
-        if (dto.getTags() != null) {
-            contact.setTags(dto.getTags());
+    public void updateContactFromDto(ContactRequest dto, Contact contact) {
+        contact.setEmail(dto.email());
+        contact.setFirstName(dto.firstName());
+        contact.setLastName(dto.lastName());
+        if (dto.tags() != null) {
+            contact.setTags(dto.tags());
         }
     }
 }

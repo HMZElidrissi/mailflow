@@ -1,14 +1,15 @@
 package com.mailflow.contactservice.controller;
 
-import com.mailflow.contactservice.dto.ContactDTO;
+import com.mailflow.contactservice.dto.contact.ContactRequest;
+import com.mailflow.contactservice.dto.contact.ContactResponse;
+import com.mailflow.contactservice.dto.contact.TagOperation;
+import com.mailflow.contactservice.dto.response.PageResponse;
 import com.mailflow.contactservice.service.ContactService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/contacts")
@@ -18,31 +19,43 @@ public class ContactController {
   private final ContactService contactService;
 
   @PostMapping
-  public ResponseEntity<ContactDTO.Response> createContact(
-      @Valid @RequestBody ContactDTO.Request request) {
-    return new ResponseEntity<>(contactService.createContact(request), HttpStatus.CREATED);
+  @ResponseStatus(HttpStatus.CREATED)
+  public ContactResponse createContact(@Valid @RequestBody ContactRequest request) {
+    return contactService.createContact(request);
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<ContactDTO.Response> updateContact(
-      @PathVariable Long id, @Valid @RequestBody ContactDTO.Request request) {
-    return ResponseEntity.ok(contactService.updateContact(id, request));
+  public ContactResponse updateContact(
+      @PathVariable Long id, @Valid @RequestBody ContactRequest request) {
+    return contactService.updateContact(id, request);
   }
 
   @PostMapping("/{id}/tags")
-  public ResponseEntity<ContactDTO.Response> addTags(
-      @PathVariable Long id, @Valid @RequestBody ContactDTO.TagOperation tagOperation) {
-    return ResponseEntity.ok(contactService.addTags(id, tagOperation.getTags()));
+  public ContactResponse addTags(
+      @PathVariable Long id, @Valid @RequestBody TagOperation tagOperation) {
+    return contactService.addTags(id, tagOperation.tags());
+  }
+
+  @DeleteMapping("/{id}/tags")
+  public ContactResponse removeTags(
+      @PathVariable Long id, @Valid @RequestBody TagOperation tagOperation) {
+    return contactService.removeTags(id, tagOperation.tags());
   }
 
   @GetMapping("/search")
-  public ResponseEntity<List<ContactDTO.Response>> searchContacts(@RequestParam String query) {
-    return ResponseEntity.ok(contactService.searchContacts(query));
+  public PageResponse<ContactResponse> searchContacts(
+      @RequestParam String query, Pageable pageable) {
+    return contactService.searchContacts(query, pageable);
+  }
+
+  @GetMapping("/{id}")
+  public ContactResponse getContact(@PathVariable Long id) {
+    return contactService.getContact(id);
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteContact(@PathVariable Long id) {
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  public void deleteContact(@PathVariable Long id) {
     contactService.deleteContact(id);
-    return ResponseEntity.noContent().build();
   }
 }

@@ -1,64 +1,68 @@
 package com.mailflow.contactservice.exception;
 
-import lombok.*;
+import com.mailflow.contactservice.dto.response.ErrorResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
-  @ExceptionHandler(ContactNotFoundException.class)
-  public ResponseEntity<ErrorResponse> handleContactNotFoundException(ContactNotFoundException ex) {
-    log.error("Contact not found: {}", ex.getMessage());
-    return new ResponseEntity<>(
-        new ErrorResponse(HttpStatus.NOT_FOUND.value(), ex.getMessage()), HttpStatus.NOT_FOUND);
+  @ExceptionHandler(ResourceNotFoundException.class)
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  public ErrorResponse handleResourceNotFoundException(ResourceNotFoundException ex) {
+    log.error("Resource not found - Message: {}", ex.getMessage());
+    return ErrorResponse.builder()
+        .status(HttpStatus.NOT_FOUND.value())
+        .error(HttpStatus.NOT_FOUND.getReasonPhrase())
+        .message(ex.getMessage())
+        .build();
   }
 
   @ExceptionHandler(ContactAlreadyExistsException.class)
-  public ResponseEntity<ErrorResponse> handleContactAlreadyExistsException(
-      ContactAlreadyExistsException ex) {
+  @ResponseStatus(HttpStatus.CONFLICT)
+  public ErrorResponse handleContactAlreadyExistsException(ContactAlreadyExistsException ex) {
     log.error("Contact already exists: {}", ex.getMessage());
-    return new ResponseEntity<>(
-        new ErrorResponse(HttpStatus.CONFLICT.value(), ex.getMessage()), HttpStatus.CONFLICT);
+    return ErrorResponse.builder()
+        .status(HttpStatus.CONFLICT.value())
+        .error(HttpStatus.CONFLICT.getReasonPhrase())
+        .message(ex.getMessage())
+        .build();
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseEntity<ErrorResponse> handleValidationException(
-      MethodArgumentNotValidException ex) {
-    List<String> errors =
-        ex.getBindingResult().getFieldErrors().stream()
-            .map(FieldError::getDefaultMessage)
-            .collect(Collectors.toList());
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorResponse handleValidationExceptions(
+      MethodArgumentNotValidException ex, HttpServletRequest request) {
 
-    log.error("Validation failed: {}", errors);
-    return new ResponseEntity<>(
-        new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Validation failed", errors),
-        HttpStatus.BAD_REQUEST);
-  }
+    log.error("Validation error occurred", ex);
 
-  @Getter
-  @Setter
-  @AllArgsConstructor
-  @NoArgsConstructor
-  public static class ErrorResponse {
-    private int status;
-    private String message;
-    private List<String> errors;
+    Map<String, String> validationErrors = new HashMap<>();
+    ex.getBindingResult()
+        .getAllErrors()
+        .forEach(
+            (error) -> {
+              String fieldName = ((FieldError) error).getField();
+              String errorMessage = error.getDefaultMessage();
+              validationErrors.put(fieldName, errorMessage);
+            });
 
-    public ErrorResponse(int status, String message) {
-      this.status = status;
-      this.message = message;
-      this.errors = new ArrayList<>();
-    }
+    return ErrorResponse.builder()
+        .timestamp(LocalDateTime.now())
+        .status(HttpStatus.BAD_REQUEST.value())
+        .error("Validation Failed")
+        .message("Input validation failed")
+        .path(request.getRequestURI())
+        .errors(validationErrors)
+        .build();
   }
 }
