@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://db:5432/mailflow
+    url: jdbc:postgresql://localhost:5432/mailflow
     driver-class-name: org.postgresql.Driver
     username: mailflow
     password: password
