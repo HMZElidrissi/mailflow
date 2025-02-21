@@ -24,7 +24,7 @@
         <module>config-server</module>
         <module>discovery-server</module>
         <module>contact-service</module>
-        <!--        <module>campaign-service</module>-->
+        <module>campaign-service</module>
         <!--        <module>segment-service</module>-->
         <!--        <module>analytics-service</module>-->
         <!--        <module>email-service</module>-->
