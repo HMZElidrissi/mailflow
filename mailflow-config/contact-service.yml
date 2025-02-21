@@ -3,13 +3,13 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/mailflow
+    url: jdbc:postgresql://localhost:5432/contact
     driver-class-name: org.postgresql.Driver
     username: mailflow
     password: password
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
