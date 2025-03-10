@@ -19,7 +19,7 @@
     <description>MailFlow Email Marketing Platform</description>
 
     <modules>
-        <!--        <module>api-gateway</module>-->
+        <module>api-gateway</module>
         <module>auth-service</module>
         <module>config-server</module>
         <module>discovery-server</module>

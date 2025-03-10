@@ -1,0 +1,61 @@
+# RewritePath transforms the incoming URL path before forwarding it to the target service. This specific filter:
+### Takes a request to /api/contacts/search?query=test
+### Transforms it to /api/v1/contacts/search?query=test before sending to the contact service
+### This allows you to present a simpler API to clients while maintaining your internal versioning
+#
+# locator enables the discovery client to find services registered with Eureka
+# and route requests to them. The lb:// prefix indicates that the service should be load-balanced
+# for example: http://localhost:8080/contact-service/api/v1/contacts
+# will be routed to the contact service
+
+server:
+  port: 8222
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: contact-service
+          uri: lb://contact-service
+          predicates:
+            - Path=/api/contacts/**
+          filters:
+            - RewritePath=/api/contacts/(?<segment>.*), /api/v1/contacts/${segment}
+
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - RewritePath=/api/auth/(?<segment>.*), /api/v1/auth/${segment}
+
+        # - id: campaign-service
+        #   uri: lb://campaign-service
+        #   predicates:
+        #     - Path=/api/campaigns/**
+        #   filters:
+        #     - RewritePath=/api/campaigns/(?<segment>.*), /api/v1/campaigns/${segment}
+
+        # - id: template-service
+        #   uri: lb://template-service
+        #   predicates:
+        #     - Path=/api/templates/**
+        #   filters:
+        #     - RewritePath=/api/templates/(?<segment>.*), /api/v1/templates/${segment}
+
+        # - id: email-service
+        #   uri: lb://email-service
+        #   predicates:
+        #     - Path=/api/emails/**
+        #   filters:
+        #     - RewritePath=/api/emails/(?<segment>.*), /api/v1/emails/${segment}
+
+        # - id: analytics-service
+        #   uri: lb://analytics-service
+        #   predicates:
+        #     - Path=/api/analytics/**
+        #   filters:
+        #     - RewritePath=/api/analytics/(?<segment>.*), /api/v1/analytics/${segment}
