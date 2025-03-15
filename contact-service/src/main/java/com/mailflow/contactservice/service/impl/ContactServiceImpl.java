@@ -103,6 +103,17 @@ public class ContactServiceImpl implements ContactService {
 
   @Transactional(readOnly = true)
   @Override
+  public PageResponse<ContactResponse> getContacts(Pageable pageable) {
+    log.info("Fetching contacts with pagination: {}", pageable);
+
+    Page<Contact> contacts = contactRepository.findAll(pageable);
+    List<ContactResponse> content =
+        contacts.stream().map(contactMapper::toResponse).collect(Collectors.toList());
+    return PageResponse.of(content, contacts);
+  }
+
+  @Transactional(readOnly = true)
+  @Override
   public ContactResponse getContact(Long id) {
     log.info("Fetching contact with ID: {}", id);
 

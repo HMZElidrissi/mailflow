@@ -16,6 +16,8 @@ public interface ContactService {
 
   ContactResponse removeTags(Long id, Set<String> tags);
 
+  PageResponse<ContactResponse> getContacts(Pageable pageable);
+
   ContactResponse getContact(Long id);
 
   PageResponse<ContactResponse> searchContacts(String query, Pageable pageable);

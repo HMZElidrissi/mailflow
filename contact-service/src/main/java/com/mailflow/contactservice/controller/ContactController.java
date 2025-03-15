@@ -18,6 +18,11 @@ public class ContactController {
 
   private final ContactService contactService;
 
+  @GetMapping
+  public PageResponse<ContactResponse> getContacts(Pageable pageable) {
+    return contactService.getContacts(pageable);
+  }
+
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public ContactResponse createContact(@Valid @RequestBody ContactRequest request) {
