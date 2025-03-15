@@ -1,4 +1,4 @@
-package ma.hmzelidrissi.apigateway;
+package com.mailflow.apigateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
