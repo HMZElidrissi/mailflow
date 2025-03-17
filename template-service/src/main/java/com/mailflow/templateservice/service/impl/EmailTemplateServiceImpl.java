@@ -134,8 +134,9 @@ public class EmailTemplateServiceImpl implements EmailTemplateService {
     return template.renderSubject(variables);
     }
 
-    private EmailTemplate getTemplateById(Long id) {
-        return templateRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Template not found with ID: " + id));
-    }
+  private EmailTemplate getTemplateById(Long id) {
+    return templateRepository
+        .findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Template not found with ID: " + id));
+  }
 }
