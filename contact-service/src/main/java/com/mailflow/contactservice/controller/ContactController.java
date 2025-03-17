@@ -11,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/contacts")
 @RequiredArgsConstructor
@@ -56,6 +58,12 @@ public class ContactController {
   @GetMapping("/{id}")
   public ContactResponse getContact(@PathVariable Long id) {
     return contactService.getContact(id);
+  }
+
+  @GetMapping("/by-tag")
+  public List<ContactResponse> findContactsByTag(
+      @RequestParam String tag) {
+      return contactService.findContactsByTag(tag);
   }
 
   @DeleteMapping("/{id}")

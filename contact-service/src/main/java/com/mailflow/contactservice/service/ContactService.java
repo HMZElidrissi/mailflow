@@ -3,6 +3,8 @@ package com.mailflow.contactservice.service;
 import com.mailflow.contactservice.dto.contact.ContactRequest;
 import com.mailflow.contactservice.dto.contact.ContactResponse;
 import com.mailflow.contactservice.dto.response.PageResponse;
+
+import java.util.List;
 import java.util.Set;
 import org.springframework.data.domain.Pageable;
 
@@ -23,4 +25,6 @@ public interface ContactService {
   PageResponse<ContactResponse> searchContacts(String query, Pageable pageable);
 
   void deleteContact(Long id);
+
+  List<ContactResponse> findContactsByTag(String tag);
 }

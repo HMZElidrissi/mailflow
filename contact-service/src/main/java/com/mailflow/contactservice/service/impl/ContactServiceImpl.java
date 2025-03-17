@@ -132,7 +132,7 @@ public class ContactServiceImpl implements ContactService {
 
     Page<Contact> contacts = contactRepository.searchContacts(query, pageable);
     List<ContactResponse> content =
-        contacts.stream().map(contactMapper::toResponse).collect(Collectors.toList());
+        contacts.stream().map(contactMapper::toResponse).toList();
     return PageResponse.of(content, contacts);
   }
 
@@ -147,5 +147,13 @@ public class ContactServiceImpl implements ContactService {
 
     contactRepository.deleteById(id);
     log.info("Contact deleted successfully with ID: {}", id);
+  }
+
+  @Override
+  public List<ContactResponse> findContactsByTag(String tag) {
+    log.info("Finding contacts with tag: {}", tag);
+
+    List<Contact> contacts = contactRepository.findByTag(tag);
+    return contacts.stream().map(contactMapper::toResponse).collect(Collectors.toList());
   }
 }
