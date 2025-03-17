@@ -11,7 +11,6 @@ import com.mailflow.contactservice.repository.ContactRepository;
 import com.mailflow.contactservice.service.ContactService;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -108,7 +107,7 @@ public class ContactServiceImpl implements ContactService {
 
     Page<Contact> contacts = contactRepository.findAll(pageable);
     List<ContactResponse> content =
-        contacts.stream().map(contactMapper::toResponse).collect(Collectors.toList());
+        contacts.stream().map(contactMapper::toResponse).toList();
     return PageResponse.of(content, contacts);
   }
 
@@ -154,6 +153,6 @@ public class ContactServiceImpl implements ContactService {
     log.info("Finding contacts with tag: {}", tag);
 
     List<Contact> contacts = contactRepository.findByTag(tag);
-    return contacts.stream().map(contactMapper::toResponse).collect(Collectors.toList());
+    return contacts.stream().map(contactMapper::toResponse).toList();
   }
 }
