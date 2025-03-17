@@ -3,43 +3,35 @@ package com.mailflow.contactservice.mapper;
 import com.mailflow.contactservice.domain.Contact;
 import com.mailflow.contactservice.dto.contact.ContactRequest;
 import com.mailflow.contactservice.dto.contact.ContactResponse;
-import org.springframework.stereotype.Component;
+import org.mapstruct.*;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-@Component
-public class ContactMapper {
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface ContactMapper {
 
-    private static final DateTimeFormatter DATE_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "version", ignore = true)
+    Contact toEntity(ContactRequest dto);
 
-    public Contact toEntity(ContactRequest dto) {
-        return Contact.builder()
-                .email(dto.email())
-                .firstName(dto.firstName())
-                .lastName(dto.lastName())
-                .tags(dto.tags())
-                .build();
-    }
+    @Mapping(target = "createdAt", source = "createdAt", qualifiedByName = "formatDateTime")
+    @Mapping(target = "updatedAt", source = "updatedAt", qualifiedByName = "formatDateTime")
+    ContactResponse toResponse(Contact entity);
 
-    public ContactResponse toResponse(Contact entity) {
-        return ContactResponse.builder()
-                .id(entity.getId())
-                .email(entity.getEmail())
-                .firstName(entity.getFirstName())
-                .lastName(entity.getLastName())
-                .tags(entity.getTags())
-                .createdAt(entity.getCreatedAt().format(DATE_FORMATTER))
-                .updatedAt(entity.getUpdatedAt().format(DATE_FORMATTER))
-                .build();
-    }
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "version", ignore = true)
+    void updateContactFromDto(ContactRequest dto, @MappingTarget Contact contact);
 
-    public void updateContactFromDto(ContactRequest dto, Contact contact) {
-        contact.setEmail(dto.email());
-        contact.setFirstName(dto.firstName());
-        contact.setLastName(dto.lastName());
-        if (dto.tags() != null) {
-            contact.setTags(dto.tags());
+    @Named("formatDateTime")
+    default String formatDateTime(LocalDateTime dateTime) {
+        if (dateTime == null) {
+            return null;
         }
+        return dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }
 }

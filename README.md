@@ -5,7 +5,7 @@ A microservices-based email marketing platform focused on campaign management an
 ## TODO
 
 - [ ] Add a proper README
-- [ ] Refactor the mapper in contact service to use mapstruct
+- [X] Refactor the mapper in contact service to use mapstruct
 - [ ] Implement the template service
 - [ ] Implement the email service using webflux
 - [ ] Implement the analytics service
