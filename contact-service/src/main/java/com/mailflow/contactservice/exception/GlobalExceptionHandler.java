@@ -65,4 +65,17 @@ public class GlobalExceptionHandler {
         .errors(validationErrors)
         .build();
   }
+
+  @ExceptionHandler(Exception.class)
+  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  public ErrorResponse handleGenericException(Exception ex, HttpServletRequest request) {
+    log.error("Unhandled exception occurred", ex);
+    return ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+            .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+            .message("An unexpected error occurred")
+            .path(request.getRequestURI())
+            .build();
+  }
 }
