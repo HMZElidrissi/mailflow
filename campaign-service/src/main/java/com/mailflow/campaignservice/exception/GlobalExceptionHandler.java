@@ -1,6 +1,7 @@
 package com.mailflow.campaignservice.exception;
 
 import com.mailflow.campaignservice.dto.response.ErrorResponse;
+import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,6 +21,17 @@ public class GlobalExceptionHandler {
         .error(HttpStatus.NOT_FOUND.getReasonPhrase())
         .message(ex.getMessage())
         .build();
+  }
+
+  @ExceptionHandler(FeignException.class)
+  @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+  public ErrorResponse handleFeignException(FeignException ex) {
+    log.error("Service communication error: {}", ex.getMessage());
+    return ErrorResponse.builder()
+            .status(HttpStatus.SERVICE_UNAVAILABLE.value())
+            .error("Service Communication Error")
+            .message("Failed to communicate with downstream service")
+            .build();
   }
 
   @ExceptionHandler(Exception.class)

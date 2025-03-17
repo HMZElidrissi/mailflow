@@ -18,26 +18,26 @@ spring:
           enabled: true
           lower-case-service-id: true
       routes:
+#        - id: auth-service
+#          uri: lb://auth-service
+#          predicates:
+#            - Path=/api/auth/**
+#          filters:
+#            - RewritePath=/api/auth/(?<segment>.*), /api/v1/auth/${segment}
+
         - id: contact-service
           uri: lb://contact-service
           predicates:
             - Path=/api/contacts/**
           filters:
-            - RewritePath=/api/contacts/(?<segment>.*), /api/v1/contacts/${segment}
+            - RewritePath=/api/contacts(?<segment>/?.*), /api/v1/contacts${segment}
 
-        - id: auth-service
-          uri: lb://auth-service
+        - id: campaign-service
+          uri: lb://campaign-service
           predicates:
-            - Path=/api/auth/**
+           - Path=/api/campaigns/**
           filters:
-            - RewritePath=/api/auth/(?<segment>.*), /api/v1/auth/${segment}
-
-        # - id: campaign-service
-        #   uri: lb://campaign-service
-        #   predicates:
-        #     - Path=/api/campaigns/**
-        #   filters:
-        #     - RewritePath=/api/campaigns/(?<segment>.*), /api/v1/campaigns/${segment}
+           - RewritePath=/api/campaigns(?<segment>/?.*), /api/v1/campaigns${segment}
 
         # - id: template-service
         #   uri: lb://template-service

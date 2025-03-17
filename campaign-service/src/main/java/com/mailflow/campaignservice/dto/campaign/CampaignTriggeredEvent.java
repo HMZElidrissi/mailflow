@@ -3,9 +3,8 @@ package com.mailflow.campaignservice.dto.campaign;
 import lombok.Builder;
 
 @Builder
-public record CampaignCreatedEvent(
+public record CampaignTriggeredEvent(
         Long campaignId,
-        String name,
-        String triggerTag,
+        Long contactId,
         Long templateId
 ) {}

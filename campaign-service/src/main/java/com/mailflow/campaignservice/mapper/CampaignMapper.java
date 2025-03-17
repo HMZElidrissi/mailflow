@@ -12,10 +12,10 @@ import java.time.format.DateTimeFormatter;
 public interface CampaignMapper {
 
   @Mapping(target = "id", ignore = true)
-  @Mapping(target = "active", constant = "false")
   @Mapping(target = "createdAt", ignore = true)
   @Mapping(target = "updatedAt", ignore = true)
   @Mapping(target = "version", ignore = true)
+  @Mapping(target = "active", constant = "false")
   @Mapping(target = "triggerTag", expression = "java(request.triggerTag().toLowerCase())")
   Campaign toEntity(CampaignRequest request);
 
@@ -23,19 +23,19 @@ public interface CampaignMapper {
   @Mapping(target = "updatedAt", source = "updatedAt", qualifiedByName = "formatDateTime")
   CampaignResponse toResponse(Campaign campaign);
 
-  @Named("formatDateTime")
-  default String formatDateTime(LocalDateTime dateTime) {
-    return dateTime != null
-        ? dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-        : null;
-  }
-
-  @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
   @Mapping(target = "id", ignore = true)
-  @Mapping(target = "active", ignore = true)
   @Mapping(target = "createdAt", ignore = true)
   @Mapping(target = "updatedAt", ignore = true)
   @Mapping(target = "version", ignore = true)
+  @Mapping(target = "active", ignore = true)
   @Mapping(target = "triggerTag", expression = "java(request.triggerTag().toLowerCase())")
-  void updateEntityFromRequest(CampaignRequest request, @MappingTarget Campaign campaign);
+  void updateCampaignFromDto(CampaignRequest request, @MappingTarget Campaign campaign);
+
+  @Named("formatDateTime")
+  default String formatDateTime(LocalDateTime dateTime) {
+    if (dateTime == null) {
+      return null;
+    }
+    return dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+  }
 }

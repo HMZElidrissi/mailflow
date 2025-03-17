@@ -22,7 +22,6 @@ public class KafkaConfig {
     private String bootstrapServers;
 
     public static final String CAMPAIGN_EVENTS_TOPIC = "campaign-events";
-    public static final String CONTACT_EVENTS_TOPIC = "contact-events";
 
     @Bean
     public NewTopic campaignEventsTopic() {

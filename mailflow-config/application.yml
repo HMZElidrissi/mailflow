@@ -27,3 +27,9 @@ eureka:
   instance:
     hostname: localhost
     prefer-ip-address: true
+
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty: DEBUG

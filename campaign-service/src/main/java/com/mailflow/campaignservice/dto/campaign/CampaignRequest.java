@@ -6,6 +6,6 @@ import lombok.Builder;
 
 @Builder
 public record CampaignRequest(
-    @NotBlank(message = "Name is required") String name,
+    @NotBlank(message = "Campaign name is required") String name,
     @NotBlank(message = "Trigger tag is required") String triggerTag,
     @NotNull(message = "Template ID is required") Long templateId) {}
