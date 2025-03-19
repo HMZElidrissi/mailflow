@@ -19,23 +19,25 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(ResourceNotFoundException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ErrorResponse handleResourceNotFoundException(ResourceNotFoundException ex) {
+  public ErrorResponse handleResourceNotFoundException(ResourceNotFoundException ex, HttpServletRequest request) {
     log.error("Resource not found - Message: {}", ex.getMessage());
     return ErrorResponse.builder()
         .status(HttpStatus.NOT_FOUND.value())
         .error(HttpStatus.NOT_FOUND.getReasonPhrase())
         .message(ex.getMessage())
+        .path(request.getRequestURI())
         .build();
   }
 
   @ExceptionHandler(TemplateAlreadyExistsException.class)
   @ResponseStatus(HttpStatus.CONFLICT)
-  public ErrorResponse handleTemplateAlreadyExistsException(TemplateAlreadyExistsException ex) {
+  public ErrorResponse handleTemplateAlreadyExistsException(TemplateAlreadyExistsException ex, HttpServletRequest request) {
     log.error("Email template already exists: {}", ex.getMessage());
     return ErrorResponse.builder()
         .status(HttpStatus.CONFLICT.value())
         .error(HttpStatus.CONFLICT.getReasonPhrase())
         .message(ex.getMessage())
+        .path(request.getRequestURI())
         .build();
   }
 
