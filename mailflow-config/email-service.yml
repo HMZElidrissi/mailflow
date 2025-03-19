@@ -1,0 +1,38 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: email-service
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/email
+    username: mailflow
+    password: password
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: email-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.mailflow.*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:your-email@gmail.com}
+    password: ${MAIL_PASSWORD:your-app-password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+logging:
+  level:
+    com.mailflow.emailservice: DEBUG
+    org.springframework.r2dbc: INFO
