@@ -1,14 +1,15 @@
 package com.mailflow.campaignservice.dto.template;
 
-import java.util.Set;
+import lombok.Builder;
+import java.util.Map;
 
+@Builder
 public record EmailTemplateResponse(
-        Long id,
-        String name,
-        String subject,
-        String content,
-        Set<String> variables,
-        String description,
-        String createdAt,
-        String updatedAt
-) {}
+    Long id,
+    String name,
+    String subject,
+    String content,
+    Map<String, String> variables,
+    String description,
+    String createdAt,
+    String updatedAt) {}

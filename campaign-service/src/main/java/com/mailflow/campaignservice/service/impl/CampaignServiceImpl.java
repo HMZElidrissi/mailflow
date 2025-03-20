@@ -41,7 +41,7 @@ public class CampaignServiceImpl implements CampaignService {
     log.info("Creating new campaign with name: {}", request.name());
 
     // Verify template exists
-    // verifyTemplateExists(request.templateId());
+     verifyTemplateExists(request.templateId());
 
     Campaign campaign = campaignMapper.toEntity(request);
     Campaign savedCampaign = campaignRepository.save(campaign);
@@ -64,7 +64,7 @@ public class CampaignServiceImpl implements CampaignService {
     Campaign campaign = getCampaignById(id);
 
     // Verify template exists
-    // verifyTemplateExists(request.templateId());
+     verifyTemplateExists(request.templateId());
 
     campaignMapper.updateCampaignFromDto(request, campaign);
     Campaign updatedCampaign = campaignRepository.save(campaign);
@@ -92,7 +92,7 @@ public class CampaignServiceImpl implements CampaignService {
     Campaign campaign = getCampaignById(id);
 
     // Verify template exists before activating
-    // verifyTemplateExists(campaign.getTemplateId());
+     verifyTemplateExists(campaign.getTemplateId());
 
     campaign.activate();
     Campaign savedCampaign = campaignRepository.save(campaign);
