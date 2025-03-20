@@ -1,6 +1,9 @@
 server:
   port: 8085
 
+base:
+  url: http://localhost:8085
+
 spring:
   application:
     name: email-service
@@ -8,6 +11,14 @@ spring:
     url: r2dbc:postgresql://localhost:5432/email
     username: mailflow
     password: password
+  flyway:
+    url: jdbc:postgresql://localhost:5432/email
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migration
+    user: ${spring.r2dbc.username}
+    password: ${spring.r2dbc.password}
   kafka:
     bootstrap-servers: localhost:9092
     consumer:

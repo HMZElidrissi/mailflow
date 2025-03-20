@@ -49,7 +49,7 @@ spring:
         - id: email-service
           uri: lb://email-service
           predicates:
-            - Path=/api/emails/**
+            - Path=/api/emails/**, /t/**, /t/click/**
           filters:
             - RewritePath=/api/emails(?<segment>/?.*), /api/v1/emails${segment}
 

@@ -5,9 +5,6 @@ import com.mailflow.templateservice.dto.template.EmailTemplateRequest;
 import com.mailflow.templateservice.dto.template.EmailTemplateResponse;
 import org.mapstruct.*;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface EmailTemplateMapper {
 
