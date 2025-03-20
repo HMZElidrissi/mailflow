@@ -8,6 +8,7 @@ public record CampaignResponse(
     String name,
     String triggerTag,
     Long templateId,
+    String templateName,
     boolean active,
     String createdAt,
     String updatedAt) {}

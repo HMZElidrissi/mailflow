@@ -19,8 +19,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -130,23 +130,19 @@ public class CampaignServiceImpl implements CampaignService {
   }
 
   @Override
-  public PageResponse<CampaignResponse> searchCampaigns(String query, Pageable pageable) {
-    Page<Campaign> campaigns = campaignRepository.searchCampaigns(query, pageable);
-    List<CampaignResponse> content = campaigns.getContent().stream()
-            .map(campaignMapper::toResponse)
-            .toList();
-    return PageResponse.of(content, campaigns);
-  }
-
-  @Override
   @Transactional(readOnly = true)
   public PageResponse<CampaignResponse> getAll(Pageable pageable) {
     log.info("Fetching all campaigns with pagination");
     Page<Campaign> page = campaignRepository.findAll(pageable);
-    List<CampaignResponse> content = page.getContent().stream()
-            .map(campaignMapper::toResponse)
-            .toList();
+    List<CampaignResponse> content = enrichWithTemplateNames(page.getContent());
     return PageResponse.of(content, page);
+  }
+
+  @Override
+  public PageResponse<CampaignResponse> searchCampaigns(String query, Pageable pageable) {
+    Page<Campaign> campaigns = campaignRepository.searchCampaigns(query, pageable);
+    List<CampaignResponse> content = enrichWithTemplateNames(campaigns.getContent());
+    return PageResponse.of(content, campaigns);
   }
 
   @Transactional(readOnly = true)
@@ -162,6 +158,42 @@ public class CampaignServiceImpl implements CampaignService {
       log.error("Error fetching contacts from contact service", e);
       return Collections.emptyList();
     }
+  }
+
+  private List<CampaignResponse> enrichWithTemplateNames(List<Campaign> campaigns) {
+    // Batch fetch template names
+    Set<Long> templateIds = campaigns.stream()
+            .map(Campaign::getTemplateId)
+            .collect(Collectors.toSet());
+
+    Map<Long, String> templateNames = new HashMap<>();
+    for (Long templateId : templateIds) {
+      try {
+        String name = templateServiceClient.getTemplate(templateId).name();
+        templateNames.put(templateId, name);
+      } catch (Exception e) {
+        log.warn("Could not fetch template name for ID {}: {}", templateId, e.getMessage());
+      }
+    }
+
+    // Enrich campaign responses
+    return campaigns.stream()
+            .map(campaign -> {
+              CampaignResponse response = campaignMapper.toResponse(campaign);
+              String templateName = templateNames.get(campaign.getTemplateId());
+
+              return new CampaignResponse(
+                      response.id(),
+                      response.name(),
+                      response.triggerTag(),
+                      response.templateId(),
+                      templateName,
+                      response.active(),
+                      response.createdAt(),
+                      response.updatedAt()
+              );
+            })
+            .toList();
   }
 
   private Campaign getCampaignById(Long id) {
