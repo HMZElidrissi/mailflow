@@ -17,3 +17,7 @@ keycloak:
     secret: ${KEYCLOAK_SECRET:client-secret}
   bearer-only: true
   use-resource-role-mappings: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
