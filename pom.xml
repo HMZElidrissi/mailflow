@@ -26,7 +26,6 @@
         <module>contact-service</module>
         <module>campaign-service</module>
         <module>template-service</module>
-        <!--        <module>analytics-service</module>-->
         <module>email-service</module>
     </modules>
 

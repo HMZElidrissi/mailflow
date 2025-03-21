@@ -31,7 +31,7 @@ public class ApplicationConfig {
 
   @Value("${spring.mail.properties.mail.smtp.starttls.enable:true}")
   private String starttls;
-  
+
   @Bean
   public JavaMailSender javaMailSender() {
     JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
@@ -41,11 +41,19 @@ public class ApplicationConfig {
     mailSender.setPassword(password);
 
     Properties props = mailSender.getJavaMailProperties();
+    props.put("mail.transport.protocol", "smtp");
     props.put("mail.smtp.auth", auth);
     props.put("mail.smtp.starttls.enable", starttls);
-    props.put("mail.debug", "false");
-    props.put("mail.smtp.socketFactory.fallback", "false");
-    props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+    props.put("mail.smtp.starttls.required", "true");
+
+    props.put("mail.smtp.ssl.protocols", "TLSv1.2 TLSv1.3");
+    props.put("mail.smtp.ssl.trust", host);
+
+    props.put("mail.smtp.connectiontimeout", "5000");
+    props.put("mail.smtp.timeout", "5000");
+    props.put("mail.smtp.writetimeout", "5000");
+
+    props.put("mail.debug", "true");
 
     return mailSender;
   }
