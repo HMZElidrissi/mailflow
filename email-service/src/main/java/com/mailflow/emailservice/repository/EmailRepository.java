@@ -9,25 +9,30 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Repository
 public interface EmailRepository extends ReactiveCrudRepository<Email, Long> {
-
-    Flux<Email> findByCampaignId(Long campaignId);
-
-    Flux<Email> findByContactId(Long contactId);
-
     Mono<Email> findByTrackingId(String trackingId);
-
-    @Query("SELECT * FROM emails WHERE campaign_id = :campaignId AND created_at >= :startDate AND created_at <= :endDate")
-    Flux<Email> findByCampaignIdAndDateRange(Long campaignId, LocalDateTime startDate, LocalDateTime endDate);
 
     @Query("SELECT * FROM emails WHERE status = :status AND created_at < :timeout")
     Flux<Email> findByStatusAndTimeout(EmailStatus status, LocalDateTime timeout);
 
-    @Query("SELECT COUNT(*) FROM emails WHERE campaign_id = :campaignId AND status = :status")
-    Mono<Long> countByCampaignIdAndStatus(Long campaignId, EmailStatus status);
-
     @Query("SELECT * FROM emails ORDER BY created_at DESC LIMIT :limit")
     Flux<Email> findRecentEmails(int limit);
+
+
+    Mono<Long> countByStatusAndCreatedAtAfter(EmailStatus status, LocalDateTime date);
+
+    Mono<Long> countByStatusAndCreatedAtBetween(EmailStatus status, LocalDateTime startDate, LocalDateTime endDate);
+
+    @Query("SELECT EXTRACT(MONTH FROM created_at) as month, " +
+            "COUNT(CASE WHEN status = 'SENT' THEN 1 END) as sent, " +
+            "COUNT(CASE WHEN status = 'OPENED' THEN 1 END) as opened, " +
+            "COUNT(CASE WHEN status = 'CLICKED' THEN 1 END) as clicked " +
+            "FROM emails " +
+            "WHERE created_at >= :startDate " +
+            "GROUP BY EXTRACT(MONTH FROM created_at) " +
+            "ORDER BY month")
+    Flux<Map<String, Object>> getEmailAnalytics(LocalDateTime startDate);
 }

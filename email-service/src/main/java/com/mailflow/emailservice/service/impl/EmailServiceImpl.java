@@ -8,7 +8,6 @@ import com.mailflow.emailservice.dto.campaign.CampaignTriggeredEvent;
 import com.mailflow.emailservice.dto.contact.ContactDTO;
 import com.mailflow.emailservice.dto.email.EmailResponse;
 import com.mailflow.emailservice.dto.email.EmailSentEvent;
-import com.mailflow.emailservice.dto.email.EmailStats;
 import com.mailflow.emailservice.kafka.KafkaEventPublisher;
 import com.mailflow.emailservice.mapper.EmailMapper;
 import com.mailflow.emailservice.repository.EmailRepository;
@@ -16,9 +15,7 @@ import com.mailflow.emailservice.service.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Callable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -222,55 +219,7 @@ public class EmailServiceImpl implements EmailService {
 
   @Override
   public Mono<EmailResponse> getEmail(Long id) {
-      var email = emailRepository.findById(id).map(emailMapper::toResponse);
-    return null;
-  }
-
-  @Override
-  public Flux<EmailResponse> getEmailsByCampaign(Long campaignId) {
-    return emailRepository.findByCampaignId(campaignId).map(emailMapper::toResponse);
-  }
-
-  @Override
-  public Flux<EmailResponse> getEmailsByContact(Long contactId) {
-    return emailRepository.findByContactId(contactId).map(emailMapper::toResponse);
-  }
-
-  @Override
-  public Mono<EmailStats> getEmailStatsByCampaign(Long campaignId) {
-    Mono<Long> sentCount = emailRepository.countByCampaignIdAndStatus(campaignId, EmailStatus.SENT);
-    Mono<Long> deliveredCount =
-        emailRepository.countByCampaignIdAndStatus(campaignId, EmailStatus.DELIVERED);
-    Mono<Long> openedCount =
-        emailRepository.countByCampaignIdAndStatus(campaignId, EmailStatus.OPENED);
-    Mono<Long> clickedCount =
-        emailRepository.countByCampaignIdAndStatus(campaignId, EmailStatus.CLICKED);
-    Mono<Long> failedCount =
-        emailRepository.countByCampaignIdAndStatus(campaignId, EmailStatus.FAILED);
-
-    return Mono.zip(sentCount, deliveredCount, openedCount, clickedCount, failedCount)
-        .map(
-            tuple -> {
-              long sent = tuple.getT1();
-              long delivered = tuple.getT2();
-              long opened = tuple.getT3();
-              long clicked = tuple.getT4();
-              long failed = tuple.getT5();
-
-              double openRate = sent > 0 ? (double) opened / sent * 100 : 0;
-              double clickRate = opened > 0 ? (double) clicked / opened * 100 : 0;
-
-              return EmailStats.builder()
-                  .campaignId(campaignId)
-                  .sent(sent)
-                  .delivered(delivered)
-                  .opened(opened)
-                  .clicked(clicked)
-                  .failed(failed)
-                  .openRate(openRate)
-                  .clickRate(clickRate)
-                  .build();
-            });
+    return emailRepository.findById(id).map(emailMapper::toResponse);
   }
 
   @Override
@@ -289,6 +238,110 @@ public class EmailServiceImpl implements EmailService {
               log.info("Retrying failed email: {}", email.getId());
               return sendEmail(email.getCampaignId(), email.getContactId(), email.getTemplateId());
             });
+  }
+
+  @Override
+  public Mono<Map<String, Object>> getEmailAnalytics(String period) {
+    LocalDateTime startDate = getStartDateForPeriod(period);
+
+    return emailRepository
+        .getEmailAnalytics(startDate)
+        .collectList()
+        .map(
+            results -> {
+              List<String> labels = new ArrayList<>();
+              List<Long> sent = new ArrayList<>();
+              List<Long> opened = new ArrayList<>();
+              List<Long> clicked = new ArrayList<>();
+
+              Map<String, Object> response = new HashMap<>();
+              response.put("labels", labels);
+              response.put("sent", sent);
+              response.put("opened", opened);
+              response.put("clicked", clicked);
+
+              return response;
+            });
+  }
+
+  @Override
+  public Mono<Map<String, Object>> getEmailStatsSummary() {
+    LocalDateTime lastMonthStart =
+        LocalDateTime.now()
+            .minusMonths(1)
+            .withDayOfMonth(1)
+            .withHour(0)
+            .withMinute(0)
+            .withSecond(0);
+    LocalDateTime thisMonthStart =
+        LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+
+    // Current month stats
+    Mono<Long> totalSent =
+        emailRepository.countByStatusAndCreatedAtAfter(EmailStatus.SENT, thisMonthStart);
+    Mono<Long> totalOpened =
+        emailRepository.countByStatusAndCreatedAtAfter(EmailStatus.OPENED, thisMonthStart);
+    Mono<Long> totalClicked =
+        emailRepository.countByStatusAndCreatedAtAfter(EmailStatus.CLICKED, thisMonthStart);
+
+    // Previous month stats
+    Mono<Long> lastMonthSent =
+        emailRepository.countByStatusAndCreatedAtBetween(
+            EmailStatus.SENT, lastMonthStart, thisMonthStart);
+    Mono<Long> lastMonthOpened =
+        emailRepository.countByStatusAndCreatedAtBetween(
+            EmailStatus.OPENED, lastMonthStart, thisMonthStart);
+    Mono<Long> lastMonthClicked =
+        emailRepository.countByStatusAndCreatedAtBetween(
+            EmailStatus.CLICKED, lastMonthStart, thisMonthStart);
+
+    return Mono.zip(
+            totalSent, totalOpened, totalClicked, lastMonthSent, lastMonthOpened, lastMonthClicked)
+        .map(
+            tuple -> {
+              long sent = tuple.getT1();
+              long opened = tuple.getT2();
+              long clicked = tuple.getT3();
+              long prevSent = tuple.getT4();
+              long prevOpened = tuple.getT5();
+              long prevClicked = tuple.getT6();
+
+              double openRate = sent > 0 ? (double) opened / sent * 100 : 0;
+              double prevOpenRate = prevSent > 0 ? (double) prevOpened / prevSent * 100 : 0;
+
+              // Calculate percentage changes
+              double sentChange = calculatePercentageChange(sent, prevSent);
+              double openedChange = calculatePercentageChange(opened, prevOpened);
+              double clickedChange = calculatePercentageChange(clicked, prevClicked);
+              double openRateChange = openRate - prevOpenRate;
+
+              Map<String, Object> stats = new HashMap<>();
+              stats.put("totalSent", sent);
+              stats.put("totalOpened", opened);
+              stats.put("totalClicked", clicked);
+              stats.put("openRate", Math.round(openRate));
+              stats.put("sentChangePercentage", sentChange);
+              stats.put("openedChangePercentage", openedChange);
+              stats.put("clickedChangePercentage", clickedChange);
+              stats.put("openRateChangePercentage", openRateChange);
+
+              return stats;
+            });
+  }
+
+  private double calculatePercentageChange(long current, long previous) {
+    if (previous == 0) return 100.0; // If previous was 0, consider it 100% increase
+    return ((double) (current - previous) / previous) * 100;
+  }
+
+  private LocalDateTime getStartDateForPeriod(String period) {
+    LocalDateTime now = LocalDateTime.now();
+    return switch (period.toLowerCase()) {
+      case "week" -> now.minusWeeks(1);
+      case "month" -> now.minusMonths(1);
+      case "quarter" -> now.minusMonths(3);
+      default -> now.minusYears(1);
+    };
   }
 
   private Mono<EmailResponse> createFailedEmail(

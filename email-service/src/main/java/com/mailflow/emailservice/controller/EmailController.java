@@ -1,13 +1,14 @@
 package com.mailflow.emailservice.controller;
 
 import com.mailflow.emailservice.dto.email.EmailResponse;
-import com.mailflow.emailservice.dto.email.EmailStats;
 import com.mailflow.emailservice.service.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/emails")
@@ -19,21 +20,6 @@ public class EmailController {
   @GetMapping("/{id}")
   public Mono<EmailResponse> getEmail(@PathVariable Long id) {
     return emailService.getEmail(id);
-  }
-
-  @GetMapping("/campaign/{campaignId}")
-  public Flux<EmailResponse> getEmailsByCampaign(@PathVariable Long campaignId) {
-    return emailService.getEmailsByCampaign(campaignId);
-  }
-
-  @GetMapping("/contact/{contactId}")
-  public Flux<EmailResponse> getEmailsByContact(@PathVariable Long contactId) {
-    return emailService.getEmailsByContact(contactId);
-  }
-
-  @GetMapping("/campaign/{campaignId}/stats")
-  public Mono<EmailStats> getEmailStatsByCampaign(@PathVariable Long campaignId) {
-    return emailService.getEmailStatsByCampaign(campaignId);
   }
 
   @GetMapping("/recent")
@@ -51,5 +37,16 @@ public class EmailController {
   @PostMapping("/retry")
   public Flux<EmailResponse> retryFailedEmails(@RequestParam(defaultValue = "60") int minutes) {
     return emailService.retryFailedEmails(minutes);
+  }
+
+  @GetMapping("/stats")
+  public Mono<Map<String, Object>> getEmailStats() {
+    return emailService.getEmailStatsSummary();
+  }
+
+  @GetMapping("/analytics")
+  public Mono<Map<String, Object>> getEmailAnalytics(
+          @RequestParam(defaultValue = "year") String period) {
+    return emailService.getEmailAnalytics(period);
   }
 }

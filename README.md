@@ -7,5 +7,7 @@ A microservices-based email marketing platform focused on campaign management an
 - [ ] Add a proper README
 - [X] Refactor the mapper in contact service to use mapstruct
 - [X] Implement the template service
-- [ ] Implement the email service using webflux
+- [X] Implement the email service using webflux
 - [ ] Implement the analytics service
+- [X] Triggering Campaign Email Sending using Kafka in the contact service b tracking new tagged contacts
+- [ ] Activate the auth service
