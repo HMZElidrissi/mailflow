@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://db:5432/contact
+    username: mailflow
+    password: password
+
+eureka:
+  instance:
+    hostname: contact-service

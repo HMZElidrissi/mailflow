@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://db:5432/mailflow
+    username: mailflow
+    password: password
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8080/realms/mailflow
+          jwk-set-uri: http://keycloak:8080/realms/mailflow/protocol/openid-connect/certs
+
+keycloak:
+  auth-server-url: http://keycloak:8080
+
+eureka:
+  instance:
+    hostname: auth-service

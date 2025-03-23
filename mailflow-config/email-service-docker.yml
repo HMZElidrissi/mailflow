@@ -1,0 +1,25 @@
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://db:5432/email
+    username: mailflow
+    password: password
+  flyway:
+    url: jdbc:postgresql://db:5432/email
+  mail:
+    host: mailhog
+    port: 1025
+    username: null
+    password: null
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+base:
+  url: http://email-service:8085
+
+eureka:
+  instance:
+    hostname: email-service

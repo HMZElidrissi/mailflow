@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://db:5432/campaign
+    username: mailflow
+    password: password
+
+eureka:
+  instance:
+    hostname: campaign-service

@@ -1,0 +1,7 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak:8080/realms/mailflow
+          jwk-set-uri: http://keycloak:8080/realms/mailflow/protocol/openid-connect/certs
