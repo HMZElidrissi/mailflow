@@ -9,10 +9,17 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
@@ -29,7 +36,10 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             authorize ->
                 authorize
-                    .requestMatchers("/api/auth/login", "/api/auth/token", "/api/auth/refresh")
+                    .requestMatchers(
+                        "/api/v1/auth/login",
+                        "/api/v1/auth/refresh",
+                        "/api/v1/users/register")
                     .permitAll()
                     .requestMatchers("/actuator/**")
                     .permitAll()
@@ -55,7 +65,25 @@ public class SecurityConfig {
 
   private Converter<Jwt, AbstractAuthenticationToken> jwtAuthenticationConverter() {
     JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-    converter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter());
+    converter.setJwtGrantedAuthoritiesConverter(
+        jwt -> {
+          Collection<GrantedAuthority> authorities = new ArrayList<>();
+
+          Map<String, Object> realmAccess = jwt.getClaimAsMap(REALM_ACCESS_CLAIM);
+          if (realmAccess != null && realmAccess.containsKey(ROLES_CLAIM)) {
+            List<String> roles = (List<String>) realmAccess.get(ROLES_CLAIM);
+            roles.forEach(
+                role -> {
+                  if (role.startsWith(ROLE_PREFIX)) {
+                    authorities.add(new SimpleGrantedAuthority(role));
+                  } else {
+                    authorities.add(new SimpleGrantedAuthority(ROLE_PREFIX + role));
+                  }
+                });
+          }
+
+          return authorities;
+        });
     return converter;
   }
 
@@ -63,7 +91,9 @@ public class SecurityConfig {
   public JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter() {
     JwtGrantedAuthoritiesConverter converter = new JwtGrantedAuthoritiesConverter();
     converter.setAuthorityPrefix(ROLE_PREFIX);
-    converter.setAuthoritiesClaimName(ROLES_CLAIM);
+
+    converter.setAuthoritiesClaimName(REALM_ACCESS_CLAIM + "." + ROLES_CLAIM);
+
     return converter;
   }
 }

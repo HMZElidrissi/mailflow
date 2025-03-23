@@ -17,6 +17,9 @@ keycloak:
     secret: ${KEYCLOAK_SECRET:client-secret}
   bearer-only: true
   use-resource-role-mappings: true
+  admin:
+    username: ${KEYCLOAK_ADMIN:admin}
+    password: ${KEYCLOAK_ADMIN_PASSWORD:admin}
 
 springdoc:
   swagger-ui:

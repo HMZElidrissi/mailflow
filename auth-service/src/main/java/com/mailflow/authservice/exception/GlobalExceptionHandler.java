@@ -12,6 +12,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 
 @RestControllerAdvice
 @Slf4j
@@ -26,6 +27,20 @@ public class GlobalExceptionHandler {
         .timestamp(LocalDateTime.now())
         .status(HttpStatus.UNAUTHORIZED.value())
         .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+        .message(ex.getMessage())
+        .path(request.getRequestURI())
+        .build();
+  }
+
+  @ExceptionHandler(AuthorizationDeniedException.class)
+  @ResponseStatus(HttpStatus.FORBIDDEN)
+  public ErrorResponse handleAuthorizationException(
+      AuthorizationDeniedException ex, HttpServletRequest request) {
+    log.error("Authorization error: {}", ex.getMessage());
+    return ErrorResponse.builder()
+        .timestamp(LocalDateTime.now())
+        .status(HttpStatus.FORBIDDEN.value())
+        .error(HttpStatus.FORBIDDEN.getReasonPhrase())
         .message(ex.getMessage())
         .path(request.getRequestURI())
         .build();

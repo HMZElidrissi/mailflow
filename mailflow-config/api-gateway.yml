@@ -1,15 +1,6 @@
-# RewritePath transforms the incoming URL path before forwarding it to the target service. This specific filter:
-### Takes a request to /api/contacts/search?query=test
-### Transforms it to /api/v1/contacts/search?query=test before sending to the contact service
-### This allows you to present a simpler API to clients while maintaining your internal versioning
-#
-# locator enables the discovery client to find services registered with Eureka
-# and route requests to them. The lb:// prefix indicates that the service should be load-balanced
-# for example: http://localhost:8080/contact-service/api/v1/contacts
-# will be routed to the contact service
-
 server:
   port: 8222
+
 spring:
   cloud:
     gateway:
@@ -18,12 +9,13 @@ spring:
           enabled: true
           lower-case-service-id: true
       routes:
-#        - id: auth-service
-#          uri: lb://auth-service
-#          predicates:
-#            - Path=/api/auth/**
-#          filters:
-#            - RewritePath=/api/auth/(?<segment>.*), /api/v1/auth/${segment}
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/**, /api/users/**
+          filters:
+            - RewritePath=/api/auth(?<segment>/?.*), /api/v1/auth${segment}
+            - RewritePath=/api/users(?<segment>/?.*), /api/v1/users${segment}
 
         - id: contact-service
           uri: lb://contact-service
@@ -52,10 +44,3 @@ spring:
             - Path=/api/emails/**, /t/**, /t/click/**
           filters:
             - RewritePath=/api/emails(?<segment>/?.*), /api/v1/emails${segment}
-
-        # - id: analytics-service
-        #   uri: lb://analytics-service
-        #   predicates:
-        #     - Path=/api/analytics/**
-        #   filters:
-        #     - RewritePath=/api/analytics(?<segment>/?.*), /api/v1/analytics${segment}
