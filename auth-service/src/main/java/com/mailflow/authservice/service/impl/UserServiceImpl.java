@@ -57,13 +57,14 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("Failed to create user");
         }
 
-        // Get the user ID from the response
         String userId = extractCreatedId(response);
 
         setUserPassword(userId, request.password());
 
         if (request.roles() != null && !request.roles().isEmpty()) {
             addRolesToUser(userId, request.roles());
+        } else {
+            addRolesToUser(userId, Collections.singletonList("ROLE_ADMIN"));
         }
 
         return getUserById(userId);

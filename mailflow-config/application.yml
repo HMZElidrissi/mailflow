@@ -1,4 +1,11 @@
 spring:
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/mailflow
+
   kafka:
     bootstrap-servers: localhost:9092
     producer:
