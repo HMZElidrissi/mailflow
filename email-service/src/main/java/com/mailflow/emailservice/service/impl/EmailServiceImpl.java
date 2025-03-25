@@ -6,6 +6,7 @@ import com.mailflow.emailservice.domain.Email;
 import com.mailflow.emailservice.domain.EmailStatus;
 import com.mailflow.emailservice.dto.campaign.CampaignTriggeredEvent;
 import com.mailflow.emailservice.dto.contact.ContactDTO;
+import com.mailflow.emailservice.dto.email.EmailAnalyticsDTO;
 import com.mailflow.emailservice.dto.email.EmailResponse;
 import com.mailflow.emailservice.dto.email.EmailSentEvent;
 import com.mailflow.emailservice.kafka.KafkaEventPublisher;
@@ -240,29 +241,55 @@ public class EmailServiceImpl implements EmailService {
             });
   }
 
-  @Override
-  public Mono<Map<String, Object>> getEmailAnalytics(String period) {
-    LocalDateTime startDate = getStartDateForPeriod(period);
+    @Override
+    public Mono<Map<String, Object>> getEmailAnalytics(String period) {
+        LocalDateTime startDate = getStartDateForPeriod(period);
 
-    return emailRepository
-        .getEmailAnalytics(startDate)
-        .collectList()
-        .map(
-            results -> {
-              List<String> labels = new ArrayList<>();
-              List<Long> sent = new ArrayList<>();
-              List<Long> opened = new ArrayList<>();
-              List<Long> clicked = new ArrayList<>();
+        return emailRepository
+                .getEmailAnalytics(startDate)
+                .collectList()
+                .map(
+                        results -> {
+                            List<String> labels = new ArrayList<>();
+                            List<Long> sent = new ArrayList<>();
+                            List<Long> opened = new ArrayList<>();
+                            List<Long> clicked = new ArrayList<>();
 
-              Map<String, Object> response = new HashMap<>();
-              response.put("labels", labels);
-              response.put("sent", sent);
-              response.put("opened", opened);
-              response.put("clicked", clicked);
+                            for (EmailAnalyticsDTO result : results) {
+                                String monthName = getMonthName(result.month());
+                                labels.add(monthName);
+                                sent.add(result.sent() != null ? result.sent() : 0L);
+                                opened.add(result.opened() != null ? result.opened() : 0L);
+                                clicked.add(result.clicked() != null ? result.clicked() : 0L);
+                            }
 
-              return response;
-            });
-  }
+                            Map<String, Object> response = new HashMap<>();
+                            response.put("labels", labels);
+                            response.put("sent", sent);
+                            response.put("opened", opened);
+                            response.put("clicked", clicked);
+
+                            return response;
+                        });
+    }
+
+    private String getMonthName(int month) {
+        return switch (month) {
+            case 1 -> "January";
+            case 2 -> "February";
+            case 3 -> "March";
+            case 4 -> "April";
+            case 5 -> "May";
+            case 6 -> "June";
+            case 7 -> "July";
+            case 8 -> "August";
+            case 9 -> "September";
+            case 10 -> "October";
+            case 11 -> "November";
+            case 12 -> "December";
+            default -> "Unknown";
+        };
+    }
 
   @Override
   public Mono<Map<String, Object>> getEmailStatsSummary() {
