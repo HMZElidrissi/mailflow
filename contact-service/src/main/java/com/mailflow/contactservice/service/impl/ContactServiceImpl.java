@@ -3,6 +3,7 @@ package com.mailflow.contactservice.service.impl;
 import com.mailflow.contactservice.domain.Contact;
 import com.mailflow.contactservice.dto.contact.ContactRequest;
 import com.mailflow.contactservice.dto.contact.ContactResponse;
+import com.mailflow.contactservice.dto.contact.ContactTaggedEvent;
 import com.mailflow.contactservice.dto.response.PageResponse;
 import com.mailflow.contactservice.exception.ContactAlreadyExistsException;
 import com.mailflow.contactservice.exception.ResourceNotFoundException;
@@ -15,8 +16,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import static com.mailflow.contactservice.config.KafkaConfig.CONTACT_EVENTS_TOPIC;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +29,7 @@ public class ContactServiceImpl implements ContactService {
 
   private final ContactRepository contactRepository;
   private final ContactMapper contactMapper;
+  private KafkaTemplate<String, Object> kafkaTemplate;
 
   @Transactional
   @Override
@@ -38,6 +43,20 @@ public class ContactServiceImpl implements ContactService {
 
     Contact contact = contactMapper.toEntity(request);
     Contact savedContact = contactRepository.save(contact);
+
+    Set<String> tags = request.tags();
+
+    tags.forEach(
+            tag -> {
+              ContactTaggedEvent event = new ContactTaggedEvent(
+                      savedContact.getId(),
+                      savedContact.getEmail(),
+                      tag
+              );
+              kafkaTemplate.send(CONTACT_EVENTS_TOPIC, event);
+              log.info("Published contact tagged event: {} - {}", savedContact.getId(), tag);
+            }
+    );
 
     log.info("Contact created successfully with ID: {}", savedContact.getId());
     return contactMapper.toResponse(savedContact);
@@ -78,6 +97,16 @@ public class ContactServiceImpl implements ContactService {
 
     tags.forEach(contact::addTag);
     Contact updatedContact = contactRepository.save(contact);
+
+    tags.forEach(tag -> {
+      ContactTaggedEvent event = new ContactTaggedEvent(
+              updatedContact.getId(),
+              updatedContact.getEmail(),
+              tag
+      );
+      kafkaTemplate.send(CONTACT_EVENTS_TOPIC, event);
+      log.info("Published contact tagged event: {} - {}", updatedContact.getId(), tag);
+    });
 
     log.info("Tags added successfully to contact with ID: {}", id);
     return contactMapper.toResponse(updatedContact);

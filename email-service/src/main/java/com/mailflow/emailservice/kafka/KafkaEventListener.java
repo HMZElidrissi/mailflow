@@ -20,7 +20,6 @@ public class KafkaEventListener {
   public void handleCampaignTriggeredEvent(CampaignTriggeredEvent event) {
     log.info("Received campaign triggered event: {}", event);
 
-    // Process the event reactively and subscribe to ensure execution
     Mono.fromRunnable(() -> emailService.processTriggeredCampaign(event))
         .subscribeOn(Schedulers.boundedElastic())
         .subscribe(
