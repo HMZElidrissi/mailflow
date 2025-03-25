@@ -1,6 +1,7 @@
 package com.mailflow.authservice.controller;
 
 import com.mailflow.authservice.dto.auth.LoginRequest;
+import com.mailflow.authservice.dto.auth.LogoutRequest;
 import com.mailflow.authservice.dto.auth.TokenResponse;
 import com.mailflow.authservice.service.AuthService;
 import jakarta.validation.Valid;
@@ -32,8 +33,9 @@ public class AuthController {
 
   @PostMapping("/logout")
   @ResponseStatus(HttpStatus.OK)
-  public void logout(
-      @RequestParam String userId, @RequestParam String refreshToken) {
+  public void logout(@RequestBody LogoutRequest logoutRequest) {
+    String userId = logoutRequest.userId();
+    String refreshToken = logoutRequest.refreshToken();
     authService.logout(userId, refreshToken);
   }
 }
