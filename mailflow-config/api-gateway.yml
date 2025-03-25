@@ -27,9 +27,9 @@ spring:
         - id: campaign-service
           uri: lb://campaign-service
           predicates:
-           - Path=/api/campaigns/**
+            - Path=/api/campaigns/**
           filters:
-           - RewritePath=/api/campaigns(?<segment>/?.*), /api/v1/campaigns${segment}
+            - RewritePath=/api/campaigns(?<segment>/?.*), /api/v1/campaigns${segment}
 
         - id: template-service
           uri: lb://template-service

@@ -18,23 +18,33 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
-    @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
-    private String issuerUri;
+  @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
+  private String issuerUri;
 
-    @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
-        return http
-                .csrf(ServerHttpSecurity.CsrfSpec::disable)
-                .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/api/auth/login", "/api/auth/refresh", "/api/users/register").permitAll()
-                        .pathMatchers("/t/**").permitAll()
-                        .pathMatchers("/actuator/**").permitAll()
-                        .pathMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .anyExchange().authenticated()
-                )
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}))
-                .build();
-    }
+  @Bean
+  public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+    return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
+        .authorizeExchange(
+            exchanges ->
+                exchanges
+                        .pathMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                        .pathMatchers(
+                        "/api/auth/login",
+                        "/api/auth/refresh",
+                        "/api/auth/logout",
+                        "/api/users/register")
+                    .permitAll()
+                    .pathMatchers("/t/**")
+                    .permitAll()
+                    .pathMatchers("/actuator/**")
+                    .permitAll()
+                    .pathMatchers("/swagger-ui/**", "/v3/api-docs/**")
+                    .permitAll()
+                    .anyExchange()
+                    .authenticated())
+        .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> {}))
+        .build();
+  }
 
     @Bean
     public CorsWebFilter corsWebFilter() {
@@ -51,8 +61,9 @@ public class SecurityConfig {
         return new CorsWebFilter(source);
     }
 
+
     @Bean
-    public ReactiveJwtDecoder jwtDecoder() {
-        return ReactiveJwtDecoders.fromIssuerLocation(issuerUri);
-    }
+  public ReactiveJwtDecoder jwtDecoder() {
+    return ReactiveJwtDecoders.fromIssuerLocation(issuerUri);
+  }
 }
