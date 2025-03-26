@@ -29,7 +29,7 @@ public class ContactServiceImpl implements ContactService {
 
   private final ContactRepository contactRepository;
   private final ContactMapper contactMapper;
-  private KafkaTemplate<String, Object> kafkaTemplate;
+  private final KafkaTemplate<String, Object> kafkaTemplate;
 
   @Transactional
   @Override

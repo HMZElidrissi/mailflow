@@ -18,7 +18,7 @@ public class ContactEventConsumer {
     private final CampaignRepository campaignRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    @KafkaListener(topics = "contact-events", groupId = "campaign-service")
+    @KafkaListener(topics = "contact-events", groupId = "campaign-service-group")
     public void consume(ContactTaggedEvent event) {
         log.info("Received contact tagged event: {} - {}", event.contactId(), event.tag());
 
